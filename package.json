@@ -1,0 +1,21 @@
+{
+  "name": "node-test1",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "electron": "^4.0.0",
+    "electron-tabs": "^0.9.5",
+    "nan": "^2.12.1"
+  },
+  "devDependencies": {
+    "electron-packager": "^13.0.1",
+    "electron-rebuild": "^1.8.2"
+  }
+}
