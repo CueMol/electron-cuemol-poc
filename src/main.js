@@ -11,7 +11,7 @@ const electron = require("electron");
 // アプリケーションをコントロールするモジュール
 const app = electron.app;
 app.disableHardwareAcceleration();
-//console.log(app);
+console.log(app.getGPUInfo("basic"));
 
 // ウィンドウを作成するモジュール
 const BrowserWindow = electron.BrowserWindow;
@@ -50,7 +50,7 @@ ipcMain.on('asynchronous-message', (event, arg) => {
 app.on('ready', function() {
     // メイン画面の表示。ウィンドウの幅、高さを指定できる
     mainWindow = new BrowserWindow();
-    mainWindow.webContents.openDevTools({ detach: true })
+    // mainWindow.webContents.openDevTools({ detach: true })
     mainWindow.loadURL('file://' + __dirname + '/index.html');
 
     mainWindow.on('ready-to-show', function () {

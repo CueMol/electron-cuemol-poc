@@ -98,32 +98,70 @@ LRESULT CALLBACK sHandleWin32Event(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lP
     HDC hdc=BeginPaint(hWnd,&ps);
     //TextOut(hdc, 0, 0, "Hello, Windows!", 15); 
     //Rectangle(hdc, 0, 0, 10, 10);
+    RECT rc;
+    GetClientRect(hWnd, &rc);
+    int w = rc.right-rc.left;
+    int h = rc.bottom-rc.top;
+    int dist = 200;
 
     wglMakeCurrent(g_hDC, g_hGLRC);
-    glClearColor(0.1, 0.1, 0, 1);
+
+    glViewport(0, 0, w, h);
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    //glOrtho(0,w, h,0, dist+1.0, -dist-1.0); //-slabnear+1.0, -slabnear-1.0);
+    glOrtho(-(GLdouble)w/200.0, (GLdouble)w/200.0,
+    	    -(GLdouble)h/200.0, (GLdouble)h/200.0, -1.0, 1.0);
+    
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
+    glClearColor(0.0, 0.0, 0, 1);
     glDrawBuffer(GL_BACK);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glPointSize(10.0);
+    glLineWidth(1.0);
+
+    glDisable(GL_CULL_FACE);
     glBegin(GL_TRIANGLES);
+    //glBegin(GL_POINTS);
+    //glBegin(GL_LINE_LOOP);
     glColor3f(1.0f, 0.0f, 0.0f);
-    glVertex2f(-0.5f, -0.5f);
+    glVertex2f(-0.50f, -0.50f);
     glColor3f(0.0f, 1.0f, 0.0f);
-    glVertex2f(-0.5f, 0.5f);
+    glVertex2f(-0.50f, 0.50f);
     glColor3f(0.0f, 0.0f, 1.0f);
-    glVertex2f(0.5f, -0.5f);
+    glVertex2f(0.50f, -0.50f);
     glEnd();
 
     SwapBuffers(g_hDC);
     wglMakeCurrent(NULL, NULL);
 
     EndPaint(hWnd,&ps);
-    //printf("WM_PAINT\n");
-    //fflush(stdout);
+    printf("WM_PAINT (%d,%d)\n",w,h);
+    fflush(stdout);
     break;
   }
     
   case WM_ERASEBKGND:
     return 0; //DefWindowProc(hWnd, msg, wParam, lParam);
 
+  case WM_LBUTTONDOWN: 
+  case WM_MBUTTONDOWN: 
+  case WM_RBUTTONDOWN: {
+    printf("WM_BUTTONDOWN\n");
+    fflush(stdout);
+    break;
+  }
+
+  case WM_MOUSEWHEEL: {
+    printf("WM_MOUSEWHEEL\n");
+    fflush(stdout);
+    break;
+  }
+    
   }
 
   return DefWindowProc(hWnd, msg, wParam, lParam);
@@ -165,7 +203,7 @@ HWND createNativeChildWnd(HWND hParWnd)
   HWND wnd = CreateWindow(wc.lpszClassName,
                           "native view",
 			  //WS_CHILD|WS_VISIBLE|WS_CLIPSIBLINGS|WS_CLIPCHILDREN,
-			  WS_CHILD|WS_VISIBLE,
+			  WS_CHILD|WS_VISIBLE|WS_DISABLED,
                           0, 0, width, height,
                           hParWnd,
                           NULL,
