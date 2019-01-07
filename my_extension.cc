@@ -100,9 +100,18 @@ LRESULT CALLBACK sHandleWin32Event(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lP
     //Rectangle(hdc, 0, 0, 10, 10);
 
     wglMakeCurrent(g_hDC, g_hGLRC);
-    glClearColor(0.1, 0.5, 0, 1);
+    glClearColor(0.1, 0.1, 0, 1);
     glDrawBuffer(GL_BACK);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glBegin(GL_TRIANGLES);
+    glColor3f(1.0f, 0.0f, 0.0f);
+    glVertex2f(-0.5f, -0.5f);
+    glColor3f(0.0f, 1.0f, 0.0f);
+    glVertex2f(-0.5f, 0.5f);
+    glColor3f(0.0f, 0.0f, 1.0f);
+    glVertex2f(0.5f, -0.5f);
+    glEnd();
+
     SwapBuffers(g_hDC);
     wglMakeCurrent(NULL, NULL);
 
