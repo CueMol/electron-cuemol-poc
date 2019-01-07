@@ -2,11 +2,15 @@
 #include <nan.h>
 #include <stdio.h>
 #include <windows.h>
+#include <GL/gl.h>
+#pragma comment(lib, "opengl32.lib")
 
 using namespace Nan;
 using namespace v8;
 
 static HWND g_hWnd;
+static HDC g_hDC;
+static HGLRC g_hGLRC;
 
 void printWndInfo(HWND hWnd)
 {
@@ -93,7 +97,15 @@ LRESULT CALLBACK sHandleWin32Event(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lP
     PAINTSTRUCT ps;
     HDC hdc=BeginPaint(hWnd,&ps);
     //TextOut(hdc, 0, 0, "Hello, Windows!", 15); 
-    Rectangle(hdc, 0, 0, 10, 10);
+    //Rectangle(hdc, 0, 0, 10, 10);
+
+    wglMakeCurrent(g_hDC, g_hGLRC);
+    glClearColor(0.1, 0.5, 0, 1);
+    glDrawBuffer(GL_BACK);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    SwapBuffers(g_hDC);
+    wglMakeCurrent(NULL, NULL);
+
     EndPaint(hWnd,&ps);
     //printf("WM_PAINT\n");
     //fflush(stdout);
@@ -101,7 +113,7 @@ LRESULT CALLBACK sHandleWin32Event(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lP
   }
     
   case WM_ERASEBKGND:
-    return DefWindowProc(hWnd, msg, wParam, lParam);
+    return 0; //DefWindowProc(hWnd, msg, wParam, lParam);
 
   }
 
@@ -221,6 +233,60 @@ NAN_METHOD(createNatWin)
   printf("child wnd: %X\n", hChWnd2);
 
   g_hWnd = hChWnd2;
+
+  HDC hDC = GetDC( g_hWnd );
+
+  PIXELFORMATDESCRIPTOR pfd;
+  int ipx;
+  memset(&pfd, 0, sizeof(PIXELFORMATDESCRIPTOR));
+  pfd.nSize = (sizeof(PIXELFORMATDESCRIPTOR));
+  pfd.nVersion = 1;
+
+  pfd.dwFlags =
+    PFD_DRAW_TO_WINDOW | // support window
+      PFD_SUPPORT_OPENGL |          // support OpenGL
+        PFD_DOUBLEBUFFER;           // double buffered
+  pfd.iPixelType = PFD_TYPE_RGBA; // RGBA type
+  pfd.cColorBits = 24; // 24-bit color depth
+  pfd.cDepthBits = 32;
+  pfd.iLayerType = PFD_MAIN_PLANE; // main layer
+  
+  pfd.cRedBits = 8;
+  pfd.cGreenBits = 8;
+  pfd.cBlueBits = 8;
+
+  int pixelformat;
+  pfd.cColorBits = 32;
+
+  pixelformat = ChoosePixelFormat(hDC, &pfd);
+  printf("ChoosePixelFormat: %d\n", pixelformat);
+  DescribePixelFormat(hDC, pixelformat,
+		      sizeof(PIXELFORMATDESCRIPTOR), &pfd);
+    
+  SetPixelFormat(hDC, pixelformat, &pfd);
+  //setPixFmt(ipx);
+
+  HGLRC hGL = wglCreateContext( hDC );
+  wglMakeCurrent(hDC, hGL);
+
+  glEnable(GL_DEPTH_TEST);
+  glEnable(GL_CULL_FACE);
+
+  glClearDepth(1.0f);
+
+  glEnable(GL_NORMALIZE);
+  glShadeModel(GL_SMOOTH);
+
+  glEnable(GL_LINE_SMOOTH);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glEnable(GL_BLEND);
+
+  g_hDC = hDC;
+  g_hGLRC = hGL;
+  printf("HDC=%d\n", g_hDC);
+  printf("HGLRC=%d\n", g_hGLRC);
+
+  fflush(stdout);
 }
 
 NAN_METHOD(setWinPos)
