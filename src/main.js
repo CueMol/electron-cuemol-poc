@@ -46,6 +46,11 @@ ipcMain.on('asynchronous-message', (event, arg) => {
     event.sender.send('asynchronous-reply', 'pong');
 });
 
+ipcMain.on('resize', (event, x, y, w, h) => {
+	//console.log("resize called", x, y, w, h);
+	myx.setWinPos(x, y, w, h);
+    });
+
 // Electronの初期化完了後に実行
 app.on('ready', function() {
     // メイン画面の表示。ウィンドウの幅、高さを指定できる
